@@ -7,6 +7,8 @@ Subplugin for [local_oer](https://github.com/llttugraz/moodle-local_oer) plugin
 * Moodle 3.9+
 * local_coursesync - not yet publicly accessible
 * coursesync_lectures - not yet publicly accessible
+* coursesync_courseid - not yet publicly accessible
+* local_tugrazonlinewebservice - not yet publicly accessible
 * [local_oer](https://github.com/llttugraz/moodle-local_oer)
 
 # Content
