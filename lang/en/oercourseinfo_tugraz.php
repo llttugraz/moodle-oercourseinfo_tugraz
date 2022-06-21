@@ -25,4 +25,5 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['pluginname'] = 'OER Courseinfo metadata aggregator - TU Graz';
+$string['pluginname']       = 'OER Courseinfo metadata aggregator - TU Graz';
+$string['privacy:metadata'] = 'This plugin does not store any personal data.';

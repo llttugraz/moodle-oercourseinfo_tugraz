@@ -25,6 +25,7 @@
 
 namespace oercourseinfo_tugraz;
 
+use coursesync_lectures\api;
 use local_coursesync\currentcourse;
 use local_oer\metadata\courseinfo;
 use local_oer\metadata\external_metadata;
@@ -97,15 +98,85 @@ class info implements external_metadata {
     }
 
     /**
-     * Extend the existing metadata with the semester and year the system is currently set to.
+     * Extend the existing metadata with the semester and year the course has according to course mapping.
      *
+     * Courses can have different semester/year settings than the global system definition is.
+     * For best metadata quality the semester has to be read from the course.
+     * If no semester could be calculated from the mapping settings the global definition will be used.
+     * - Mapping is ignored in local_oer course metadata settings -> skip (when no candidate remains -> global)
+     * - This course has no mapping -> global
+     * - When mappings qualify -> the newest mapping of this course will be selected (across all defined mappings)
+     *
+     * @param int $courseid Moodle courseid
      * @return array
      * @throws \dml_exception
      */
-    public static function add_metadata_fields(): array {
+    public static function add_metadata_fields(int $courseid): array {
+        global $DB;
+        $semester       = strtoupper(get_config('coursesync_lectures', 'current_semester')) . 'S';
+        $year           = get_config('coursesync_lectures', 'current_year');
+        $currentcourse  = new currentcourse($courseid);
+        $module         = $currentcourse->get_submodule();
+        $coursesemester = null;
+        $courseyear     = null;
+        switch ($currentcourse->get_type_of_course()) {
+            case 'lectures':
+                $mappings = $module->read_mapping();
+                foreach ($mappings as $mapping) {
+                    // Find out if this mapping is used by the course metadata.
+                    // Or if it is ignored or deleted. Skip for calculation.
+                    if (!$DB->record_exists('local_oer_courseinfo',
+                                            ['courseid' => $courseid, 'coursecode' => $mapping->identifier,
+                                             'ignored'  => 0,
+                                             'deleted'  => 0])) {
+                        continue;
+                    }
+                    // Take the first four characters of the information string, as they mark the newest semester of that mapping.
+                    $newest = substr($mapping->information, 0, 4);
+                    if (preg_match('/[W|S]S[0-9]{2}/', $newest)) {
+                        $localyear = intval(substr($newest, 2, 2));
+                        // The semester has to be WS or SS for all mappings, so it is easy to assign.
+                        $coursesemester = substr($newest, 0, 2);
+                        if ($localyear > $courseyear) {
+                            $courseyear = $localyear;
+                        }
+                    }
+                }
+                $year     = $courseyear ? "20" . $courseyear : $year;
+                $semester = $coursesemester ?? $semester;
+                break;
+            case 'courseid':
+                $mappings = $module->read_mapping();
+                foreach ($mappings as $mapping) {
+                    // Find out if this mapping is used by the course metadata.
+                    // Or if it is ignored or deleted. Skip for calculation.
+                    if (!$DB->record_exists('local_oer_courseinfo',
+                                            ['courseid' => $courseid, 'external_courseid' => $mapping->identifier,
+                                             'ignored'  => 0,
+                                             'deleted'  => 0])) {
+                        continue;
+                    }
+                    $localsemester = substr($mapping->information, -6, 2);
+                    $localyear     = substr($mapping->information, -4, 4);
+                    // If the year is higher than the currently stored year - both has to be taken, year and semester.
+                    // If the year is the same it also has to be tested if the semester is WS -> WS > SS in the same year.
+                    if ($localyear > $courseyear) {
+                        $courseyear     = $localyear;
+                        $coursesemester = $localsemester;
+                    } else if ($localyear == $courseyear && $localsemester == 'WS') {
+                        $coursesemester = $localsemester;
+                    }
+                }
+                $year     = $courseyear ?? $year;
+                $semester = $coursesemester ?? $semester;
+                break;
+            default:
+                // For the other module types no semester is used.
+                // So the global setting will be the best fit for a time definition.
+        }
         return [
-                'semester' => strtoupper(get_config('coursesync_lectures', 'current_semester')) . 'S',
-                'year'     => get_config('coursesync_lectures', 'current_year'),
+                'semester' => $semester,
+                'year'     => $year,
         ];
     }
 }

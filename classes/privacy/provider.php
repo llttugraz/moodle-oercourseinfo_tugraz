@@ -23,7 +23,19 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace oercourseinfo_tugraz\privacy;
 
-$string['pluginname']       = 'OER Kurs Metadaten Aggregator - TU Graz';
-$string['privacy:metadata'] = 'Dieses Plugin speichert keine persönlichen Daten.';
+/**
+ * Class provider
+ */
+class provider implements \core_privacy\local\metadata\null_provider {
+
+    /**
+     * Null provider, does not store any data.
+     *
+     * @return  string
+     */
+    public static function get_reason() : string {
+        return 'privacy:metadata';
+    }
+}
