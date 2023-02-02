@@ -93,6 +93,7 @@ class info implements external_metadata {
             $course->organisation      = $org->name;
             $course->language          = $info->language;
             $course->lecturer          = implode(',', $teach);
+            $course->subplugin         = 'tugraz';
             $infos[$info->coursecode]  = $course;
         }
     }

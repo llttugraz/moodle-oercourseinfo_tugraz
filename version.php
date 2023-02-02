@@ -28,7 +28,7 @@ defined('MOODLE_INTERNAL') || die();
 $plugin->version      = 2021121000;
 $plugin->requires     = 2020061500;
 $plugin->component    = 'oercourseinfo_tugraz';
-$plugin->release      = 'v1.0.1';
+$plugin->release      = 'v1.0.2';
 $plugin->dependencies = [
         'local_oer'                    => 2021121000,
         'local_coursesync'             => 2021081800,
