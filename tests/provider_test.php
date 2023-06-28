@@ -19,19 +19,28 @@
  *
  * @package    oercourseinfo_tugraz
  * @author     Christian Ortner <christian.ortner@tugraz.at>
- * @copyright  2021 Educational Technologies, Graz, University of Technology
+ * @copyright  2023 Educational Technologies, Graz, University of Technology
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+namespace oercourseinfo_tugraz;
 
-$plugin->version      = 2023062800;
-$plugin->requires     = 2020061500;
-$plugin->component    = 'oercourseinfo_tugraz';
-$plugin->release      = 'v1.1.0-RC1';
-$plugin->dependencies = [
-        'local_oer'                    => 2021121000,
-        'local_coursesync'             => 2021081800,
-        'local_tugrazonlinewebservice' => 2021121000,
-        'coursesync_lectures'          => 2021081600,
-];
+use oercourseinfo_tugraz\privacy\provider;
+
+/**
+ * Class provider_test
+ *
+ * @coversDefaultClass \oercourseinfo_tugraz\privacy\provider
+ */
+class provider_test extends \advanced_testcase {
+    /**
+     * Test string of language identifier.
+     *
+     * @return void
+     * @covers ::get_reason
+     */
+    public function test_get_reason() {
+        $this->resetAfterTest();
+        $this->assertEquals('privacy:metadata', provider::get_reason());
+    }
+}

@@ -4,11 +4,11 @@ on: [push, pull_request]
 
 jobs:
   test:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
 
     services:
       postgres:
-        image: postgres:10
+        image: postgres:13
         env:
           POSTGRES_USER: 'postgres'
           POSTGRES_HOST_AUTH_METHOD: 'trust'
@@ -30,17 +30,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: ['7.3', '7.4', '8.0']
-        moodle-branch: ['MOODLE_39_STABLE','MOODLE_311_STABLE']
+        php: ['7.4', '8.0', '8.1']
+        moodle-branch: ['MOODLE_311_STABLE', 'MOODLE_401_STABLE', 'MOODLE_402_STABLE']
         database: [pgsql, mariadb]
         exclude:
-        # Moodle 3.9 does not support PHP 8.0
-        - php: '8.0'
-          moodle-branch: 'MOODLE_39_STABLE'
+          - php: '7.4'
+            moodle-branch: 'MOODLE_402_STABLE'
+          - php: '8.1'
+            moodle-branch: 'MOODLE_311_STABLE'
 
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: plugin
 
@@ -50,7 +51,8 @@ jobs:
           php-version: ${{ matrix.php }}
           extensions: ${{ matrix.extensions }}
           ini-values: max_input_vars=5000
-          coverage: none
+          # none to use phpdbg fallback. Specify pcov (Moodle 3.10 and up) or xdebug to use them instead.
+          coverage: pcov
 
       - name: Initialise moodle-plugin-ci
         run: |
@@ -59,6 +61,7 @@ jobs:
           echo $(cd ci/vendor/bin; pwd) >> $GITHUB_PATH
           sudo locale-gen en_AU.UTF-8
           echo "NVM_DIR=$HOME/.nvm" >> $GITHUB_ENV
+
       - name: Install moodle-plugin-ci
         run: |
           moodle-plugin-ci add-plugin --branch main llttugraz/moodle-local_oer
@@ -107,7 +110,7 @@ jobs:
 
       - name: PHPUnit tests
         if: ${{ always() }}
-        run: moodle-plugin-ci phpunit
+        run: moodle-plugin-ci phpunit --coverage-text --fail-on-warning
 
       - name: Behat features
         if: ${{ always() }}
