@@ -32,14 +32,14 @@ use oercourseinfo_tugraz\privacy\provider;
  *
  * @coversDefaultClass \oercourseinfo_tugraz\privacy\provider
  */
-class provider_test extends \advanced_testcase {
+final class provider_test extends \advanced_testcase {
     /**
      * Test string of language identifier.
      *
      * @return void
      * @covers ::get_reason
      */
-    public function test_get_reason() {
+    public function test_get_reason(): void {
         $this->resetAfterTest();
         $this->assertEquals('privacy:metadata', provider::get_reason());
     }

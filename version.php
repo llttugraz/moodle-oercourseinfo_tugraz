@@ -35,3 +35,4 @@ $plugin->dependencies = [
         'local_tugrazonlinewebservice' => 2021121000,
         'coursesync_lectures'          => 2021081600,
 ];
+$plugin->supported = [401, 405];

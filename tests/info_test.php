@@ -42,7 +42,7 @@ require_once(__DIR__ . '/../../../tests/helper/fromform.php');
  *
  * @coversDefaultClass \oercourseinfo_tugraz\info
  */
-class info_test extends \advanced_testcase {
+final class info_test extends \advanced_testcase {
     /**
      * The testcourse created in setup.
      *
@@ -62,6 +62,7 @@ class info_test extends \advanced_testcase {
      * @throws \dml_exception
      */
     public function setUp(): void {
+        parent::setUp();
         $this->setAdminUser();
         // Set up local_coursesync, coursesync_lectures and local_tugrazonlinewebservice to have useful metadata.
         set_config('current_semester', 'w', 'coursesync_lectures');
@@ -94,7 +95,7 @@ class info_test extends \advanced_testcase {
      * @throws \moodle_exception
      * @covers ::load_data
      */
-    public function test_load_data() {
+    public function test_load_data(): void {
         $this->resetAfterTest();
         $info = new info();
         $result = [];
@@ -120,7 +121,7 @@ class info_test extends \advanced_testcase {
      * @throws \dml_exception
      * @covers ::add_metadata_fields
      */
-    public function test_add_metadata_fields() {
+    public function test_add_metadata_fields(): void {
         $this->resetAfterTest();
 
         $result = info::add_metadata_fields($this->course->id);
