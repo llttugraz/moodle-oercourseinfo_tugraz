@@ -1,0 +1,20 @@
+{
+    "authors": [
+        {
+            "name": "Christian Ortner",
+            "email": "christian.ortner@tugraz.at",
+            "role": "Maintainer"
+        }
+    ],
+    "description": "Subplugin for local_oer Moodle plugin. Load course information from TUGRAZonline.",
+    "keywords": ["OER", "OEAA", "Moodle", "courseinfo", "oefos", "TUGRAZonline"],
+    "name": "llttugraz/moodle-oercourseinfo_tugraz",
+    "require": {
+        "moodle/moodle": "4.1 - 4.5",
+        "llttugraz/moodle-local_oer": ">=2.3"
+    },
+    "license": "GPL-3.0-or-later",
+    "extra": {
+        "_readme": "This composer file only contains dependencies that are hosted on GitHub. There are some more dependencies for this subplugin. These dependencies are not publicly available. Please take a look into the README of the this repository to find more information."
+    }
+}
