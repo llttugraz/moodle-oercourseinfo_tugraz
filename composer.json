@@ -11,7 +11,8 @@
     "name": "llttugraz/moodle-oercourseinfo_tugraz",
     "require": {
         "moodle/moodle": "4.1 - 4.5",
-        "llttugraz/moodle-local_oer": ">=2.3"
+        "llttugraz/moodle-local_oer": ">=2.3",
+        "llt-plugindev/moodle-local_tugrazonlinewebservice": "> v2.6.0"
     },
     "license": "GPL-3.0-or-later",
     "extra": {

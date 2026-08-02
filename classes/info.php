@@ -29,6 +29,12 @@ use local_coursesync\currentcourse;
 use local_oer\metadata\courseinfo;
 use local_oer\metadata\external_metadata;
 use local_tugrazonlinewebservice\client;
+use local_tugrazonlinewebservice\gatewayapi\dataset\course_resource_semester;
+use local_tugrazonlinewebservice\gatewayapi\dataset\courseparticipant_resource;
+use local_tugrazonlinewebservice\gatewayapi\dataset\courseparticipant_resource_role;
+use local_tugrazonlinewebservice\gatewayapi\dataset\courseroster_oer_resource;
+use local_tugrazonlinewebservice\gatewayapi\dataset\localisation;
+use local_tugrazonlinewebservice\gatewayapi\dataset\person_role_resource;
 
 /**
  * Class info
@@ -38,6 +44,28 @@ use local_tugrazonlinewebservice\client;
  * course information from TUGRAZonline.
  */
 class info implements external_metadata {
+    /**
+     * Returns metadata about the given orgunitid.
+     * The metadata is retirevied via a generic webservice.
+     *
+     * @param int $orgunitid
+     * @return \stdClass|null
+     * @throws \moodle_exception
+     */
+    private static function get_organisation(int $orgunitid): ?\stdClass {
+        static $wsresponse = null;
+        if ($wsresponse === null) {
+            $wsresponse = client::load('organisations', []);
+        }
+
+        foreach ($wsresponse as $organisation) {
+            if ($organisation->orgunitid === $orgunitid) {
+                return $organisation;
+            }
+        }
+        return null;
+    }
+
     /**
      * Load the linked course metadata from TUGRAZonline.
      * A Moodle course at Graz University of Technology can have multiple course mappings of the external system.
@@ -63,35 +91,37 @@ class info implements external_metadata {
         }
         $tracking = [];
         foreach ($courseids as $tugrazonlinecourseid) {
-            $info = client::load('teachers', [$tugrazonlinecourseid]);
-            $value = $info->semester == 's' ? $info->year : $info->year + 0.5;
-            if (isset($tracking[$info->coursecode]) && $value < $tracking[$info->coursecode]) {
+            /** @var courseroster_oer_resource $coursemd */
+            $coursemd = client::load('base_course_oer', [$tugrazonlinecourseid, localisation::GERMAN, true]);
+            $info = $coursemd->courseresource;
+            $value = $info->semester == course_resource_semester::SUMMER ? $info->year : $info->year + 0.5;
+            if (isset($tracking[$info->code]) && $value < $tracking[$info->code]) {
                 // We already visited a newer semester of the same course -> skip it.
                 continue;
             } else {
-                $tracking[$info->coursecode] = $value;
+                $tracking[$info->code] = $value;
             }
             $dbcourse = $DB->get_record('coursesync_lectures_courses', ['courseid' => $tugrazonlinecourseid], '*', MUST_EXIST);
-            $org = client::load('organisation', [$dbcourse->orgunitid]);
+            $org = self::get_organisation($dbcourse->orgunitid);
             $teach = [];
-            foreach ($info->teachers as $teacher) {
-                if ($teacher->roleid == 'V') {
-                    $teach[] = $teacher->firstname . ' ' . $teacher->lastname;
+            foreach ($coursemd->courseparticipants as /** @var courseparticipant_resource $teacher */ $teacher) {
+                if ($teacher->roles->contains_resource_by_identifier(courseparticipant_resource_role::LECTURER->name)) {
+                    $teach[] = $teacher->mdluser->firstname . ' ' . $teacher->mdluser->lastname;
                 }
             }
             $course = courseinfo::get_default_metadata_object($courseid);
             $course->external_courseid = $dbcourse->courseid;
             $course->external_sourceid = $dbcourse->sourceid ?? -1;
-            $course->coursecode = $info->coursecode;
+            $course->coursecode = $info->code;
             $course->coursename = $info->name;
-            $course->structure = $info->teachingactivityname . ' (' . $info->teachingactivityid . ')';
+            $course->structure = $info->typelabel . ' (' . $info->type . ')';
             $course->description = $info->description;
-            $course->objectives = $info->objectives;
-            $course->organisation = $org->name;
-            $course->language = $info->language;
+            $course->objectives = $info->objective;
+            $course->organisation = $org?->name ?? '';
+            $course->language = strtolower($info->mainlanguage->value);
             $course->lecturer = implode(',', $teach);
             $course->subplugin = 'tugraz';
-            $infos[$info->coursecode] = $course;
+            $infos[$info->code] = $course;
         }
     }
 

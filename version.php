@@ -32,7 +32,7 @@ $plugin->release      = 'v1.1.1';
 $plugin->dependencies = [
         'local_oer'                    => 2021121000,
         'local_coursesync'             => 2021081800,
-        'local_tugrazonlinewebservice' => 2021121000,
+        'local_tugrazonlinewebservice' => 2026070200,
         'coursesync_lectures'          => 2021081600,
 ];
 $plugin->supported = [401, 405];
