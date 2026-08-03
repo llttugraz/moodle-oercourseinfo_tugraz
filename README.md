@@ -48,7 +48,7 @@ with the third option there are also the git functions available.
 ## Requirements
 
 - Supported Moodle Version: 4.1 - 4.5
-- Supported PHP Version:    7.4 - 8.3
+- Supported PHP Version:    8.1 - 8.3
 - Supported Databases:      MariaDB, PostgreSQL
 - Supported Moodle Themes:  Boost
 
