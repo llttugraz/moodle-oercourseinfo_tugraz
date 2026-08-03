@@ -105,6 +105,9 @@ class info implements external_metadata {
             $org = self::get_organisation($dbcourse->orgunitid);
             $teach = [];
             foreach ($coursemd->courseparticipants as /** @var courseparticipant_resource $teacher */ $teacher) {
+                if ($teacher->mdluser === null) {
+                    continue;
+                }
                 if ($teacher->roles->contains_resource_by_identifier(courseparticipant_resource_role::LECTURER->name)) {
                     $teach[] = $teacher->mdluser->firstname . ' ' . $teacher->mdluser->lastname;
                 }
