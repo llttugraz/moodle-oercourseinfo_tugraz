@@ -31,11 +31,13 @@ use local_coursesync\currentcourse;
 use local_oer\forms\fileinfo_form;
 use local_oer\fromform;
 use local_oer\testcourse;
+use local_tugrazonlinewebservice\gatewayapi_trait;
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once(__DIR__ . '/../../../tests/helper/testcourse.php');
 require_once(__DIR__ . '/../../../tests/helper/fromform.php');
+require_once(__DIR__ . '/../../../../tugrazonlinewebservice/tests/helper/gatewayapi_trait.php');
 
 /**
  * Class info_test
@@ -43,6 +45,7 @@ require_once(__DIR__ . '/../../../tests/helper/fromform.php');
  * @coversDefaultClass \oercourseinfo_tugraz\info
  */
 final class info_test extends \advanced_testcase {
+    use gatewayapi_trait;
     /**
      * The testcourse created in setup.
      *
@@ -85,6 +88,14 @@ final class info_test extends \advanced_testcase {
         $fromform->syncenabled = 1;
         currentcourse::set_course_type($course->id, $fromform);
         $this->course = $course;
+
+        $this->getDataGenerator()->create_user([
+            'username' => 'lect111',
+            'firstname' => 'Test',
+            'lastname' => 'Teacher',
+        ]);
+        $issuer = $this->set_oauth2_service();
+        $this->set_access_token($issuer->get('id'));
     }
 
     /**
